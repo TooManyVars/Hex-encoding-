@@ -116,17 +116,17 @@ def interface():
     showInterfaceActions()
     action = str(input())
     action = action.lower() 
+  
+  if action == "ex":
+    exit()
 
-  if action == "de" or "en":
+  elif action == "de" or "en":
     path = getFilePath()
 
     if path != None and action == "en":
      encryptFile(path)
     elif path != None and action == "de":
      decryptFile(path)
-
-  elif action == "ex":
-    exit()
 
   sleep(1)
   print("\nTerminating program...")
@@ -136,4 +136,4 @@ def interface():
 #All of the main functions.
 #encryptFile(getFilePath())
 #decryptFile(getFilePath())
-#interface()
+interface()
