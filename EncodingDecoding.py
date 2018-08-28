@@ -1,139 +1,80 @@
-from time import sleep
+import argparse
+import os
 
-#Main funtions for encryption/decryption
-##########################################################
-
-
-def encryptString(string):
-  return ''.join([hex(ord(index)) for index in string]) #converts the string to an array in which each index is in hexadecimal version, and then returns it.
-
-def decryptLetter(hexLetter): #returns the decrypted version of a hexadecimal letter.
-  return chr(int(hexLetter,16))
-
-def decryptString(phrase):
-  decryptedString = [] #where we will store the decrytped string.
-
-  for index in range(0,len(phrase)): #iterate through the string
-    if phrase[index] == "0" and phrase[index+1] == "x": #look for an 0x prefix
-      decryptedLetter = chr(int(phrase[index]+phrase[index+1]+phrase[index+2]+phrase[index+3],16)) #take the next 2 indexes, plus that 0x prefix and put them into a combined seperate string, converting this string (for example "0x60" to an int and then a letter.)
-      decryptedString.append(decryptedLetter) 
-
-
-  return ''.join(decryptedString)
-
-
-#functions for file handling
-##########################################################
-
-def getFilePath(): #gets the desired file(exception safe)
-
-  print("\n\nEnter the deisred file name/file path:")
-  loop = True 
-
-  while(loop):
-
-    try:
-      path = input()
-
-      if path.lower() == "ex":
+def isValidFile(path):
+    if not os.path.exists(path):
+        print("Error: file path '{}' does not exist.".format(path))
         return None
-      else:
-        with open(path,"r") as file: #read contents of the file to check to see if the file is valid/exists or not. if not, this behaviour will raise the fileNotFoundError.
-          f = file.read() 
-        loop = False #if an exception is not raised by this point, the file is valid, meaning that we can exit the loop.
-    except FileNotFoundError:
-        print("\nFile does not exist.\nPlease re-enter the path name and try again, or type 'ex' to return to the main menu")
-    except Exception:
-        print("\nSomething went wrong. please re-enter the file directory and try again.")
+    else:
+        return open(path, "r")
+    
+def encodeString(string):
+    return ''.join([hex(ord(index)) for index in string])
 
-  return path
-      
+def decodeLetter(letter):
+    return chr(int(letter,16))
 
-def encryptFile(path):
-  fileContents = [] #declare the file contents as an array so that we can put readlines() into it.
-  encryptedFileContents = [] 
-  
-  with open(path, "r") as file:
-    fileContents = file.read().splitlines()
-  
-  encryptedFileContents = [encryptString(fileContents[index]) for index in range(0,len(fileContents))]
+def decodeString(string):
 
-  with open(path,"a+") as file:
-    file.truncate(0)
-    for index in encryptedFileContents:
-      file.write(index)
-      file.write("\n")
-  print("File successfully encrypted.\n")
+    decodedString = []
+    
+    for index in range(0,len(string)):
+        if string[index] == "0" and string[index+1] == "x":
+            decodedLetter = decodeLetter(string[index] + string[index+1] + string[index+2] + string[index+3])
+            decodedString.append(decodedLetter)
+            
+    return ''.join(decodedString)
+
+def encodeFile(f):
+    fContents = f.read().splitlines()
+    EncodedfContents = [encodeString(index) for index in fContents]
+    
+    pathName = f.name
+    oFname = os.path.basename(f.name) #original filename
+
+    newPath = pathName.replace(".txt","-Encoded") #temporarily take out the ".txt" so we can add a "encoded" suffix.
+    newPath = newPath.replace("-Decoded","")
+    
+    with open(newPath + ".txt","a") as newEncodedFile: #open and write the encoded contents
+        for index in EncodedfContents:
+            newEncodedFile.write(index + "\n")
+    print("\nAn encoded version of the file has been created in the same directory.")
+
+def decodeFile(f):
+    fContents = f.read().splitlines()
+
+    decodedfContents = [decodeString(index) for index in fContents]
+    
+    pathName = f.name
+    oFname = os.path.basename(f.name) #original filename
+
+    newPath = pathName.replace(".txt","-Decoded")
+    newPath = newPath.replace("-Encoded","")
+    
+    with open(newPath + ".txt","a") as newDecodedFile: 
+        for index in decodedfContents:
+            newDecodedFile.write(index + "\n")
+    print("\nA decoded version of the file has been created in the same directory.")
+    
     
 
-def decryptFile(path):
-  warning = str(input("\nWarning: decryption process will ignore/overwrite any plaintext characters. proceed?"))
 
-  if warning.lower() == "no": #small little proceed message before decryption.
-      return None
+parser = argparse.ArgumentParser()
 
-  fileContents = []
-  decryptedFileContents = []
+parser.add_argument("filePath", help="The file you wish to operate on.",type=str) #get the file path
 
-  with open(path, "r") as file:
-    fileContents = file.read().splitlines()
+helpText = "Create a copy of the file with the original contents " #to avoid repeating myself when formatting strings.
 
-  decryptedFileContents = [decryptString(fileContents[index]) for index in range(0,len(fileContents))]
+group = parser.add_mutually_exclusive_group() #add the option to either encode or decode.
+group.add_argument("-d","--decode", help="Create an version of the given file decoded from hexadecimal. If the file is already de-coded, this file will be deleted afterwards.".format(helpText), action="store_true")
+group.add_argument("-e","--encode", help="Create hexadecimal encoded version of the given file. If the file is already encoded, it is encoded again.".format(helpText), action="store_true")
 
-  with open(path,"a+") as file:
-    file.truncate(0)
-    for index in decryptedFileContents:
-      file.write(index)
-      file.write("\n")
-  print("File successfully decrypted.")
-  
+args = parser.parse_args()
 
+f = isValidFile(args.filePath)
 
-#function for the CLI 
-##########################################################
-
-
-def showInterfaceActions():
-  print("-(De)crypt\n-(En)crypt\n-(Ex)it")
-
-def interface():
-
-  print("File encryption/decryption script\n")
-  sleep(1)
-
-  print("Menu:")
-  showInterfaceActions()
-
-  #De = decrypt file
-  #En = encrypt file
-  #Ex = exit
-  #upper/lower case is irrelevant when entering these commands.
-  action = str(input("Enter desired command:"))
-  action = action.lower()
-  
-  while action != "de" and action != "en" and action != "ex":
-    print("\nCommand is invalid; please re enter, using one of the following:")
-    showInterfaceActions()
-    action = str(input())
-    action = action.lower() 
-  
-  if action == "ex":
-    exit()
-
-  elif action == "de" or "en":
-    path = getFilePath()
-
-    if path != None and action == "en":
-     encryptFile(path)
-    elif path != None and action == "de":
-     decryptFile(path)
-
-  sleep(1)
-  print("\nTerminating program...")
-  sleep(1)
-
-
-#All of the main functions.
-#encryptFile(getFilePath())
-#decryptFile(getFilePath())
-interface()
+if f:
+    if args.encode:
+        encodeFile(f)
+    if args.decode:
+        decodeFile(f)
