@@ -56,7 +56,7 @@ def decodeFile(f):
     newPath = pathName.replace(".txt","-Decoded")
     newPath = newPath.replace("-Encoded","")
     
-    with open(newPath + ".txt","a") as newDecodedFile: 
+    with open(newPath + ".txt","a") as newDecodedFile:
         newDecodedFile.truncate(0)
         for index in decodedfContents:
             newDecodedFile.write(index + "\n")
@@ -97,12 +97,14 @@ group.add_argument("-e","--encode", help="Create hexadecimal encoded version of 
 args = parser.parse_args()
 
 f = isValidFile(args.filePath)
-fSize = os.path.getsize(args.filePath)
 
-#file size shouldn't be more than 45mb(or 47,185,920 bytes).
-print("\nFile size: {} ".format(fSize))
 
 if f:
+    fSize = os.path.getsize(args.filePath)
+
+    #file size shouldn't be more than 45mb(or 47,185,920 bytes).
+    print("\nFile size: {} ".format(fSize))
+    
     if fSize < 47185920:
         if args.encode:
             encodeFile(f)
@@ -110,4 +112,3 @@ if f:
             decodeFile(f)
     elif fSize > 47185920:
          print("\nFile is too large to be operated on. maximum file size is 47,185,920b or 47mb.")
-   
