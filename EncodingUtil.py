@@ -108,4 +108,4 @@ if f:
             decodeFile(f)
     elif fSize > 47185920:
          print("\nFile is too large to be operated on. maximum file size is 47,185,920b or 47mb.")
-    
+   
