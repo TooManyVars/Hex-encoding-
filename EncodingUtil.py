@@ -57,7 +57,7 @@ def decodeFile(f):
     newPath = newPath.replace("-Encoded","")
     
     with open(newPath + ".txt","a") as newDecodedFile: 
-        newEncodedFile.truncate(0)
+        newDecodedFile.truncate(0)
         for index in decodedfContents:
             newDecodedFile.write(index + "\n")
 
