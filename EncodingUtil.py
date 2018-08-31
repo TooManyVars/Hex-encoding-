@@ -40,6 +40,7 @@ def encodeFile(f):
     
     
     with open(newPath + ".txt","a") as newEncodedFile: #open and write the encoded contents
+        newEncodedFile.truncate(0)
         for index in EncodedfContents:
             newEncodedFile.write(index + "\n")
     print("\nAn encoded version of the file has been created in the same directory.")
@@ -56,6 +57,7 @@ def decodeFile(f):
     newPath = newPath.replace("-Encoded","")
     
     with open(newPath + ".txt","a") as newDecodedFile: 
+        newEncodedFile.truncate(0)
         for index in decodedfContents:
             newDecodedFile.write(index + "\n")
 
