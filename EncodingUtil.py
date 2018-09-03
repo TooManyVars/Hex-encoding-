@@ -53,8 +53,11 @@ def decodeFile(f):
     pathName = f.name
     oFname = os.path.basename(f.name) #original filename
 
-    newPath = pathName.replace(".txt","-Decoded")
+    newPath = pathName.replace(".txt","")
     newPath = newPath.replace("-Encoded","")
+    newPath = newPath.replace("-Decoded","")
+    newPath = newPath + "-Decoded"
+    
     
     with open(newPath + ".txt","a") as newDecodedFile:
         newDecodedFile.truncate(0)
