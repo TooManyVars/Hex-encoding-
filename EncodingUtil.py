@@ -1,3 +1,7 @@
+#recently solved a problem where if you tried to decode a file that was already decoded by the program, the file would delete itself.
+#now what happens is that if the filepath to the file you are trying to decode and the filepath that you are trying to write the decoded results to are the same, no operation is done.
+#the same does NOT apply to the "encode" function.
+
 import argparse
 import os
 import string
@@ -37,7 +41,8 @@ def encodeFile(f):
     newPath = newPath.replace("-Decoded","")
     newPath = newPath.replace("-Encoded","")
     newPath = newPath + "-Encoded"
-    
+
+    f.close()
     
     with open(newPath + ".txt","a") as newEncodedFile: #open and write the encoded contents
         newEncodedFile.truncate(0)
@@ -58,6 +63,9 @@ def decodeFile(f):
     newPath = newPath.replace("-Decoded","")
     newPath = newPath + "-Decoded"
     
+    if newPath+".txt" ==  f.name:
+        print("Cannot perform decode operation on a file that has already been decoded by this program.")
+        return None
     
     with open(newPath + ".txt","a") as newDecodedFile:
         newDecodedFile.truncate(0)
@@ -115,3 +123,7 @@ if f:
             decodeFile(f)
     elif fSize > 47185920:
          print("\nFile is too large to be operated on. maximum file size is 47,185,920b or 47mb.")
+    
+    
+
+
