@@ -1,5 +1,6 @@
-#Right now we need to update to python 3.7 in order to make sure that the entered file is only a text file, 
-#But we'll do that later down the line.
+"""Right now we need to update to python 3.7 in order to make sure that the entered file is only a text file, 
+   as well as thoroughly tesing the introduction of illegal hexadecimal numbers in decodeString().
+"""
 
 import argparse
 import os
@@ -47,13 +48,40 @@ def decodeLetter(letter):
    When found, it will put these two, with the next two digits following after that, into a 4 letter string which will be ran through the encodeLetter function.
    When decoded, this will be put into an array.
 """
+"""
+Modified version of the string decoding algorithim uses try catches to skip iterations of a loop if the four current characters fed into the decode letter function
+Cause a valueError to be raised, or a StopIteration error if there are an irrational amount of letters/numbers
+"""
 def decodeString(string):
-    decodedString = []
-    for index in range(0,len(string)):
-        if string[index] == "0" and string[index+1] == "x":
-            decodedLetter = decodeLetter(string[index] + string[index+1] + string[index+2] + string[index+3])
-            decodedString.append(decodedLetter)            
-    return ''.join(decodedString)
+  decodedString = []
+  decodingErrors = 0 #the amount of times one or more letters could not be decoded properly. reported to the user after the string is decoded.
+
+  string_iter = iter(string)
+  for index in string_iter:
+
+    try:
+      currentIndex = index 
+      secondIndex = next(string_iter)
+      thirdIndex = next(string_iter)
+      fourthIndex = next(string_iter)
+    except StopIteration:
+      print("\nOne or more hexadecimal letters could not be decoded properly; continuing operation.\n")
+      decodingErrors += 1
+      continue
+
+    if currentIndex == "0" and secondIndex == "x":
+      try:
+        decodedLetter = decodeLetter(currentIndex + secondIndex + thirdIndex + fourthIndex)
+        decodedString.append(decodedLetter)
+        continue
+      except ValueError:
+        print("\nNon-hexadecimal letter was detected during operation. skipping to next avaliable hexadecimal number.\n")
+        decodingErrors += 1
+        continue
+
+  if decodingErrors > 0:
+    print("WARNING: There was {} decoding error(s) raised during the operation(due to a combination of irrational letters or numbers).\nFile may not have been converted properly.\n".format(decodingErrors))
+  return ''.join(decodedString)
 
 """Both encode and decodeFile simply involve taking the contents of the file and putting them into a string, operating on them, and then writing the
    changed contents into a new file, using all of the aforementioned functions above.
@@ -156,3 +184,4 @@ if f:
             decodeFile(f)
     elif fSize > 47185920:
          print("\nFile is too large to be operated on. maximum file size is 47,185,920b or 47mb.")
+            
