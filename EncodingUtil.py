@@ -13,7 +13,7 @@ def isValidFile(path):
     
     try: 
         if not Path.is_file(Path(path)):
-            print("\nError: file path '{}' does not exist.".format(path))
+            print("\nError: file path '{}' is invalid.".format(path))
             return None
         else:
             return open(path, "r")
