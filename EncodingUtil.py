@@ -1,23 +1,29 @@
-"""Right now we need to update to python 3.7 in order to make sure that the entered file is only a text file, 
-   as well as thoroughly tesing the introduction of illegal hexadecimal numbers in decodeString().
-"""
-
+import time
 import argparse
 import os
 import string
+from pathlib import Path
 
 """checks for file validity."""
 def isValidFile(path):
-    if not os.path.exists(path): 
-        print("\nError: file path '{}' does not exist.".format(path))
-        return None
-    else:
-        return open(path, "r")
 
+    """wrap the check for file validity in a try catch #
+       so we can stop things like the user giving something other than a text file, etc.
+    """
+    
+    try: 
+        if not Path.is_file(Path(path)):
+            print("\nError: file path '{}' does not exist.".format(path))
+            return None
+        else:
+            return open(path, "r")
+    except OSError:
+        print("\nError: given file directory syntax is incorrect, please provide the file path as 'directory\\file.extension'.")
+            
 """The file name given when encrypting multiple times needs to be monitered."""
 def renameFile(path): #if a file with the given name already exists, rename with an incremental number suffix until it doesn't.
 
-    if not os.path.exists(path): #initially check if the file doesn't exists.
+    if not Path.is_file(Path(path)): #initially check if the file doesn't exists.
         #if it doesn't, simply return the path given as there is no conflicting filename.
         return path
     
@@ -26,7 +32,7 @@ def renameFile(path): #if a file with the given name already exists, rename with
     extension = ".txt" #remove the .txt extension so that you can add in the number suffix.
     newPath = "{0}({1}){2}".format(path,i,extension)
 
-    while os.path.exists(newPath): #check if 'example(i).txt' doesn't exist as a file name.
+    while Path.is_file(Path(newPath)): #check if 'example(i).txt' doesn't exist as a file name.
         i+=1 #if so, increment i by 1 and format in the same fashion as before until there isn't a file with the same name.
         #this time it'll be something like "example(i+1).txt"
         newPath = "{0}({1}){2}".format(path,i,extension)
@@ -64,8 +70,7 @@ def decodeString(string):
       secondIndex = next(string_iter)
       thirdIndex = next(string_iter)
       fourthIndex = next(string_iter)
-    except StopIteration:
-      print("\nOne or more hexadecimal letters could not be decoded properly; continuing operation.\n")
+    except StopIteration:#raised when the program tries to decoded less than 4 non hexadecimal letters.
       decodingErrors += 1
       continue
 
@@ -74,21 +79,24 @@ def decodeString(string):
         decodedLetter = decodeLetter(currentIndex + secondIndex + thirdIndex + fourthIndex)
         decodedString.append(decodedLetter)
         continue
-      except ValueError:
-        print("\nNon-hexadecimal letter was detected during operation. skipping to next avaliable hexadecimal number.\n")
-        decodingErrors += 1
+      except ValueError: #raised when the program tries to decode a non hex letter.
         continue
-
-  if decodingErrors > 0:
-    print("WARNING: There was {} decoding error(s) raised during the operation(due to a combination of irrational letters or numbers).\nFile may not have been converted properly.\n".format(decodingErrors))
-  return ''.join(decodedString)
+  return ''.join(decodedString) 
 
 """Both encode and decodeFile simply involve taking the contents of the file and putting them into a string, operating on them, and then writing the
    changed contents into a new file, using all of the aforementioned functions above.
 """
 
 def encodeFile(f):
-    fContents = f.read().splitlines()
+
+    fContents = ""
+    
+    try:
+        fContents = f.read().splitlines()
+    except UnicodeDecodeError:
+        print("\nError: file type must be text(.txt) only.")
+        return None
+        
     EncodedfContents = [encodeString(index) for index in fContents]
     
     pathName = f.name
@@ -162,13 +170,14 @@ parser.add_argument("filePath", help="The file you wish to operate on.",type=str
 helpText = "Create a copy of the file with the original contents " #to avoid repeating myself when formatting strings.
 
 group = parser.add_mutually_exclusive_group() #add the option to either encode or decode.
-group.add_argument("-d","--decode", help="Create an version of the given file decoded from hexadecimal. If the file is already de-coded, this file will be deleted afterwards.".format(helpText), action="store_true")
+group.add_argument("-d","--decode", help="Create an version of the given file decoded from hexadecimal. If the file is already de-coded, this file will be deleted afterwards(Note that illegal hexadecimal characters will be ignored).".format(helpText), action="store_true")
 group.add_argument("-e","--encode", help="Create hexadecimal encoded version of the given file. If the file is already encoded, it is encoded again.".format(helpText), action="store_true")
 
 args = parser.parse_args()
 
 f = isValidFile(args.filePath)
 
+startTime = time.time() #the current time of the program at initialization.
 
 if f:
     #get the file size AFTER checking it's validity.
@@ -182,6 +191,7 @@ if f:
             encodeFile(f)
         if args.decode:
             decodeFile(f)
+        print("\nOperation runtime: {} seconds".format(round(time.time() - startTime, 3)))
     elif fSize > 47185920:
          print("\nFile is too large to be operated on. maximum file size is 47,185,920b or 47mb.")
-            
+           
