@@ -176,7 +176,7 @@ parser.add_argument("filePath", help="The file you wish to operate on.",type=str
 helpText = "Create a copy of the file with the original contents " #to avoid repeating myself when formatting strings.
 
 group = parser.add_mutually_exclusive_group() #add the option to either encode or decode.
-group.add_argument("-d","--decode", help="Create an version of the given file decoded from hexadecimal. If the file is already de-coded, this file will be deleted afterwards.".format(helpText), action="store_true")
+group.add_argument("-d","--decode", help="Create an version of the given file decoded from hexadecimal. If the file is already de-coded, this file will be deleted afterwards(note that illegal hexadecimal characters will be ignored).".format(helpText), action="store_true")
 group.add_argument("-e","--encode", help="Create hexadecimal encoded version of the given file. If the file is already encoded, it is encoded again.".format(helpText), action="store_true")
 
 args = parser.parse_args()
